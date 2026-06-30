@@ -50,16 +50,24 @@ Price : {book.price}
 ------------------------
 {index}. Name : {book.name}
 Author : {book.author}
+Price : {book.price}
 ------------------------""")
         user = int(input("Which Book Would You Like To Buy?\n"))
         chosen_book = books[user - 1]
-        print(f"You Bought {chosen_book.name}")
+        acc = User()
+        if acc.balance >= book.price:
+            print(f"You Bought {chosen_book.name}")
+            time.sleep(1)
+        else:
+            print("Not enough money")
+            time.sleep(1)
 
 
 class User():
-    def __init__(self, name="", phone_number=0):
+    def __init__(self, name="", phone_number=0, balance=0):
         self.name = name
         self.phone_number = phone_number
+        self.balance = balance
         self.history = []
 
     def register(self):
@@ -105,10 +113,15 @@ def main():
         if choice == "1":
             new_acc = User()
             new_acc.register()
+            book = Book()
+            menu(book, new_acc)
 
         elif choice == "2":
             login_acc = User()
-            login_acc.login()
+            logged_in_user = login_acc.login() 
+            if logged_in_user:
+                book = Book()
+                menu(book, logged_in_user)  
 
         elif choice == "3":
             exit()
@@ -117,11 +130,42 @@ def main():
             print("Invalid Command")
 
 
-def menu():
-    print("Which feature would you like to use:")
-    print("1. Rent Book\n" \
-    "2. Buy Book\n" \
-    "3. Balance\n" \
-    "4. History\n" \
-    "5. Logout")
-    choice = input()
+def menu(book, current_account):
+    while True:
+        print("Which feature would you like to use:")
+        print("1. Rent Book\n" \
+        "2. Buy Book\n" \
+        "3. Balance\n" \
+        "4. History\n" \
+        "5. Logout")
+        choice = input()
+
+        if choice == "1":
+            book.rent_book()
+
+        elif choice == "2":
+            book.buy_book()
+        
+        elif choice == "3":
+            print(f"Balance : {current_account.balance}")
+        
+        elif choice == "4":
+            for i in current_account.history:
+                print(f"""
+    ---------------------
+    {i}
+    ---------------------""")
+        
+        elif choice == "5":
+            print("Logging Out....")
+            time.sleep(1)
+            return
+
+        else:
+            print("Invalid Command")
+            return
+
+def test():
+    book = Book()
+    book.add_book()
+
