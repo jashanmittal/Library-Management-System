@@ -5,13 +5,31 @@ import json
 books = []
 users = []
 
+def save():
+    with open("users.json", "w") as file:
+        json.dump(users, file)
+    
+    with open("books.json", "w") as file:
+        json.dump(books, file)
+
+def load():
+    global books, users
+
+    with open("users.json", "r") as file:
+        users = json.load(file)
+    
+    with open("books.json", "r") as file:
+        books = json.load(file)
+
+
 class Book():
+
     def __init__(self, name="", author="", price=0):
         self.name = name
         self.author = author
         self.price = price
 
-    def rent_book(self):
+    def rent_book(self, current_account):
         for index, book in enumerate(books, start=1):
             print(f"""
 ------------------------
@@ -21,6 +39,8 @@ Author : {book.author}
         user = int(input("Which Book Would You Like To Get On Rent?\n"))
         chosen_book = books[user - 1]
         print(f"You rented {chosen_book.name}")
+        current_account.history.append(f"You Rented {chosen_book.name} on {datetime.datetime.now()}")
+        time.sleep(1)
 
     def add_book(self):
         name = input("Name : ")
@@ -29,6 +49,7 @@ Author : {book.author}
         new_book = Book(name, author, price)
         books.append(new_book)
         print("Book Successfully Added")
+        save()
         time.sleep(1)
 
     def delete_book(self):
@@ -42,9 +63,10 @@ Price : {book.price}
         user = int(input("Which Book Would You Delete?\n"))
         books.pop(user - 1)
         print("Successfully Deleted Book From Database")
+        save()
         time.sleep(1)
 
-    def buy_book(self):
+    def buy_book(self, current_account):
         for index, book in enumerate(books, start=1):
             print(f"""
 ------------------------
@@ -54,9 +76,10 @@ Price : {book.price}
 ------------------------""")
         user = int(input("Which Book Would You Like To Buy?\n"))
         chosen_book = books[user - 1]
-        acc = User()
-        if acc.balance >= book.price:
+        if current_account.balance >= book.price:
+            current_account.balance -= chosen_book.price
             print(f"You Bought {chosen_book.name}")
+            current_account.history.append(f"You Bought {chosen_book.name} on {datetime.datetime.now()}")
             time.sleep(1)
         else:
             print("Not enough money")
@@ -76,10 +99,12 @@ class User():
             self.phone_number = int(input("Enter your Phone Number : "))
         except ValueError:
             print("Enter valid phone number")
+            time.sleep(1)
             return
 
         users.append(self)
         print("Successfully Registered")
+        save()
         time.sleep(1)
 
     def login(self):
@@ -88,6 +113,7 @@ class User():
             phone_number = int(input("Enter your Phone Number : "))
         except ValueError:
             print("Enter valid phone number")
+            time.sleep(1)
             return
         
         found = False
@@ -100,6 +126,7 @@ class User():
     
         if not found:
             print("Invalid Login Details")
+            time.sleep(1)
 
 
 def main():
@@ -128,6 +155,7 @@ def main():
 
         else:
             print("Invalid Command")
+            time.sleep(1)
 
 
 def menu(book, current_account):
@@ -141,13 +169,31 @@ def menu(book, current_account):
         choice = input()
 
         if choice == "1":
-            book.rent_book()
+            book.rent_book(current_account)
 
         elif choice == "2":
-            book.buy_book()
+            book.buy_book(current_account)
         
         elif choice == "3":
-            print(f"Balance : {current_account.balance}")
+            print("Which feature would you like to use:")
+            choice = input("1. Check Balance\n" \
+            "2. Add Funds\n")
+            if choice == "1":
+                print(f"Balance : {current_account.balance}")
+                time.sleep(1)
+            elif choice == "2":
+                try:
+                    amount = float(input("Enter amount of money to deposit : "))
+                    print(f"Successfully deposited {amount}")
+                    current_account.balance += amount
+                    current_account.history.append(f"Deposited {amount} on {datetime.datetime.now()}")
+                    time.sleep(1)
+                except ValueError:
+                    print("Enter valid amount")
+                    time.sleep(1)
+            else:
+                print("Invalid Command")
+                time.sleep(1)
         
         elif choice == "4":
             for i in current_account.history:
@@ -163,9 +209,12 @@ def menu(book, current_account):
 
         else:
             print("Invalid Command")
+            time.sleep(1)
             return
 
 def test():
     book = Book()
     book.add_book()
 
+test()
+main()
