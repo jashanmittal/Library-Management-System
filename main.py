@@ -6,20 +6,45 @@ books = []
 users = []
 
 def save():
+    user_data = []
+    for user in users:
+        user_data.append({"name": user.name,
+                          "phone number": user.phone_number,
+                          "balance": user.balance,
+                          "history": user.history})
     with open("users.json", "w") as file:
-        json.dump(users, file)
+        json.dump(user_data, file)
     
+    book_data = []
+    for book in books:
+        book_data.append({"name": book.name,
+                          "author": book.author,
+                          "price": book.price})
     with open("books.json", "w") as file:
-        json.dump(books, file)
+        json.dump(book_data, file)
+
 
 def load():
     global books, users
-
-    with open("users.json", "r") as file:
-        users = json.load(file)
-    
-    with open("books.json", "r") as file:
-        books = json.load(file)
+    try:
+        with open("users.json", "r") as file:
+            user_data = json.load(file)
+            
+            for i in user_data:
+                users.append(i["name"], i["phone number"], i["balance"], i["history"])
+    except FileNotFoundError:
+        users = []
+    except json.JSONDecodeError:
+        users = []
+    try:
+        with open("books.json", "r") as file:
+            book_data = json.load(file)
+            for i in book_data:
+                books.append(i["name"], i["author"], i["price"])
+    except FileNotFoundError:
+        users = []
+    except json.JSONDecodeError:
+        users = []
 
 
 class Book():
@@ -76,7 +101,7 @@ Price : {book.price}
 ------------------------""")
         user = int(input("Which Book Would You Like To Buy?\n"))
         chosen_book = books[user - 1]
-        if current_account.balance >= book.price:
+        if current_account.balance >= chosen_book.price:
             current_account.balance -= chosen_book.price
             print(f"You Bought {chosen_book.name}")
             current_account.history.append(f"You Bought {chosen_book.name} on {datetime.datetime.now()}")
@@ -87,11 +112,11 @@ Price : {book.price}
 
 
 class User():
-    def __init__(self, name="", phone_number=0, balance=0):
+    def __init__(self, name="", phone_number=0, balance=0, history = None):
         self.name = name
         self.phone_number = phone_number
         self.balance = balance
-        self.history = []
+        self.history = [] if history is not None else []
 
     def register(self):
         self.name = input("Enter your name : ")
@@ -130,6 +155,7 @@ class User():
 
 
 def main():
+    load()
     while True:
         print("Which feature would you like to use:")
         print("1. Register\n" \
