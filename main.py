@@ -5,6 +5,7 @@ import json
 books = []
 users = []
 
+
 def save():
     user_data = []
     for user in users:
@@ -31,7 +32,13 @@ def load():
             user_data = json.load(file)
             
             for i in user_data:
-                users.append(i["name"], i["phone number"], i["balance"], i["history"])
+                user = User(
+                        i["name"],
+                        i["phone number"],
+                        i["balance"],
+                        i["history"]
+                    )
+                users.append(user)
     except FileNotFoundError:
         users = []
     except json.JSONDecodeError:
@@ -40,11 +47,27 @@ def load():
         with open("books.json", "r") as file:
             book_data = json.load(file)
             for i in book_data:
-                books.append(i["name"], i["author"], i["price"])
+                book = Book(
+                i["name"],
+                i["author"],
+                i["price"]
+            )
+                books.append(book)
     except FileNotFoundError:
-        users = []
+        books = []
     except json.JSONDecodeError:
-        users = []
+        books = []
+
+
+def admin_login():
+    username = input("Enter admin username : ")
+    password = input("Enter admin password : ")
+
+    if username == "admin" and password == "admin":
+        print("Successfully Logged In")
+        admin_menu()
+    else:
+        print("Invalid Username or Password")
 
 
 class Book():
@@ -65,6 +88,7 @@ Author : {book.author}
         chosen_book = books[user - 1]
         print(f"You rented {chosen_book.name}")
         current_account.history.append(f"You Rented {chosen_book.name} on {datetime.datetime.now()}")
+        save()
         time.sleep(1)
 
     def add_book(self):
@@ -105,6 +129,7 @@ Price : {book.price}
             current_account.balance -= chosen_book.price
             print(f"You Bought {chosen_book.name}")
             current_account.history.append(f"You Bought {chosen_book.name} on {datetime.datetime.now()}")
+            save()
             time.sleep(1)
         else:
             print("Not enough money")
@@ -116,7 +141,7 @@ class User():
         self.name = name
         self.phone_number = phone_number
         self.balance = balance
-        self.history = [] if history is not None else []
+        self.history = history if history is not None else []
 
     def register(self):
         self.name = input("Enter your name : ")
@@ -160,7 +185,8 @@ def main():
         print("Which feature would you like to use:")
         print("1. Register\n" \
         "2. Login\n" \
-        "3. Exit")
+        "3. Admin Login\n" \
+        "4. Exit")
         choice = input()
 
         if choice == "1":
@@ -177,6 +203,9 @@ def main():
                 menu(book, logged_in_user)  
 
         elif choice == "3":
+            admin_login()
+        
+        elif choice == "4":
             exit()
 
         else:
@@ -213,6 +242,7 @@ def menu(book, current_account):
                     print(f"Successfully deposited {amount}")
                     current_account.balance += amount
                     current_account.history.append(f"Deposited {amount} on {datetime.datetime.now()}")
+                    save()
                     time.sleep(1)
                 except ValueError:
                     print("Enter valid amount")
@@ -238,9 +268,25 @@ def menu(book, current_account):
             time.sleep(1)
             return
 
-def test():
-    book = Book()
-    book.add_book()
+def admin_menu():
+    while True:
+        print("Which feature would you like to use:")
+        choice = input("1. Add book\n" \
+        "2. Delete book\n" \
+        "3.Logout\n")
 
-test()
+        book = Book()
+
+        if choice == "1":
+            book.add_book()
+        
+        elif choice == "2":
+            book.delete_book()
+        
+        elif choice == "3":
+            return
+        
+        else:
+            print("Invalid Command")
+
 main()
